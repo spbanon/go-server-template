@@ -1,0 +1,57 @@
+services:
+  db:
+    image: "postgres:15.0-alpine"
+    environment:
+      # all params for db in .env
+    volumes:
+      - ./ps_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - net
+  rabbitmq:
+    build:
+      dockerfile: ./rabbitmq/Dockerfile
+      context: ./rabbitmq
+    environment:
+    # all params for rabbitmq in .env
+    volumes:
+      - "./rabbitmq/data:/var/lib/rabbitmq/mnesia/"
+    ports:
+      - 2222:5672
+      - 12222:15672
+    networks:
+      - net
+    restart: always
+  dbhandler:
+    build:
+      network: host
+      dockerfile: ./dbhandler/Dockerfile
+      context: ./dbhandler
+    environment:
+      - RMQ_HOST
+      # all params for dbhandler in .env
+    networks:
+      - net
+    volumes:
+      - $SHARED_PATH:$SHARED_PATH
+    ports:
+      - $DB_SERVER_PORT:$DB_SERVER_PORT
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    restart: always
+  server:
+    build:
+      network: host
+      dockerfile: ./server/Dockerfile
+      context: ./server
+    environment:
+      - RMQ_HOST
+      # all params for server in .env
+    volumes:
+      - $SHARED_PATH:$SHARED_PATH
+    networks:
+      - net
+    ports:
+      - 8888:8888
+    restart: always
