@@ -1,5 +1,5 @@
-#SIMPLE GO SERVER TEMPLATE
-It has 
+##SIMPLE GO SERVER TEMPLATE
+#It has 
 * JWT token
 * RabbitMQ
 * Simple dbhandler for postgresql
